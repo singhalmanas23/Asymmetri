@@ -1,4 +1,4 @@
-import { streamText, convertToCoreMessages } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import { getServerSession } from "next-auth";
@@ -29,7 +29,11 @@ export async function POST(req: Request) {
     let isNewSession = false;
 
     if (!activeSessionId) {
-      const firstMessage = messages[messages.length - 1].content;
+      const lastMsg = messages[messages.length - 1];
+      const firstMessage = lastMsg.content ||
+        (lastMsg.parts?.find((p: any) => p.type === 'text') as any)?.text ||
+        "";
+
       let title = "New Chat";
       let description = "New Chat Session";
 
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
       isNewSession = true;
     }
 
-    const coreMessages = convertToCoreMessages(messages);
+    const coreMessages = await convertToModelMessages(messages);
 
     const result = await streamText({
       model: LLM_CONFIG.model as any,
@@ -56,7 +60,11 @@ export async function POST(req: Request) {
       onFinish: async ({ text, toolCalls, toolResults }) => {
         try {
           // Save the full interaction to the database
-          const lastUserMessage = messages[messages.length - 1].content;
+          const lastMsg = messages[messages.length - 1];
+          const lastUserMessage = lastMsg.content ||
+            (lastMsg.parts?.find((p: any) => p.type === 'text') as any)?.text ||
+            "";
+
           await chatService.saveMessagesAfterStreaming(
             userId,
             lastUserMessage,
