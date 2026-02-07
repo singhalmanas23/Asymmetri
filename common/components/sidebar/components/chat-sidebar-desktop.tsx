@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, MessageSquare, Sparkles, PanelLeft } from "lucide-react";
+import { Plus, MessageSquare, Sparkles, PanelLeft, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/common/components/ui/button";
 import { ScrollArea } from "@/common/components/ui/scroll-area";
 import { cn } from "@/common/lib/utils";
@@ -8,6 +8,9 @@ import Link from "next/link";
 import { UserProfile } from "./user-profile";
 import NextImage from "next/image";
 import { IMAGES } from "@/common/constant/images";
+import { deleteChatSession } from "@/lib/actions";
+import { toast } from "sonner";
+import { refreshSidebar } from "./chat-sidebar";
 
 interface Chat {
   id: string;
@@ -24,6 +27,7 @@ interface ChatSidebarDesktopProps {
   loading?: boolean;
   hasMore?: boolean;
   lastSessionRef?: React.RefObject<HTMLButtonElement | null>;
+  onDeleteChat?: (id: string) => void;
 }
 
 export function ChatSidebarDesktop({
@@ -153,6 +157,26 @@ export function ChatSidebarDesktop({
                     ? `${chat.title.substring(0, 23)}...`
                     : chat.title}
                 </span>
+
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (confirm("Are you sure you want to delete this chat?")) {
+                      try {
+                        const result = await deleteChatSession(chat.id);
+                        if (result) {
+                          toast.success("Chat deleted successfully");
+                          refreshSidebar();
+                        }
+                      } catch (error) {
+                        toast.error("Failed to delete chat");
+                      }
+                    }
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 hover:text-destructive rounded transition-all ml-auto"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </button>
             ))}
             {loading && (
