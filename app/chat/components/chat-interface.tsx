@@ -118,20 +118,18 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
                                         if (!isToolCall) return null;
 
                                         // Normalize the tool invocation structure
-                                        const toolInvocation = part.toolInvocation || {
-                                            ...part,
-                                            // Handle potential 'input' instead of 'args' if version differs
-                                            args: part.args || part.input,
-                                            result: part.result || part.output,
-                                        };
+                                        const toolInvocation = part.toolInvocation || part;
 
                                         const toolCallId = toolInvocation.toolCallId;
                                         // V6 uses tool-NAME as the type, and sometimes omits toolName in the part itself
                                         const toolName = toolInvocation.toolName ||
                                             (part.type?.startsWith('tool-') ? part.type.replace('tool-', '') : 'unknown');
 
-                                        if ('result' in toolInvocation || toolInvocation.result) {
-                                            return <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
+                                        // V6 results might be in 'result' or 'output'
+                                        const toolResult = toolInvocation.result !== undefined ? toolInvocation.result : toolInvocation.output;
+
+                                        if (toolResult !== undefined && toolResult !== null) {
+                                            return <ToolResult key={toolCallId || i} toolName={toolName} result={toolResult} />
                                         } else {
                                             return (
                                                 <div key={toolCallId || i} className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg animate-pulse">
@@ -243,6 +241,7 @@ function EmptyState({ onSend }: { onSend: (v: string) => void }) {
 }
 
 function ToolResult({ toolName, result }: { toolName: string, result: any }) {
+    if (!result) return null;
     const name = toolName.toLowerCase();
 
     if (name === 'getweather' || name === 'weather') {
