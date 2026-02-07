@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return (result as any).toTextStreamResponse({
+    return (result as any).toDataStreamResponse({
       headers: {
         "x-session-id": activeSessionId,
       }
