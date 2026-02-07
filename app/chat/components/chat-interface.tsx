@@ -210,7 +210,7 @@ function EmptyState({ onSend }: { onSend: (v: string) => void }) {
             </div>
             <div className="space-y-2 max-w-md">
                 <h2 className="text-2xl font-bold">How can I help you?</h2>
-                <p className="text-muted-foreground">I'm integrated with real-time tools. Ask me about current events or financial data.</p>
+                <p className="text-muted-foreground">I&apos;m integrated with real-time tools. Ask me about current events or financial data.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl px-4">
                 {suggestions.map((s, i) => (
@@ -231,7 +231,7 @@ function EmptyState({ onSend }: { onSend: (v: string) => void }) {
                         <div className="p-2.5 rounded-xl bg-background/80 shadow-sm ring-1 ring-white/5 group-hover:ring-primary/20 transition-all">{s.icon}</div>
                         <div>
                             <span className="text-sm font-semibold block mb-1 group-hover:text-primary transition-colors">{s.label}</span>
-                            <p className="text-[11px] text-muted-foreground line-clamp-2">Try asking: "{s.prompt}"</p>
+                            <p className="text-[11px] text-muted-foreground line-clamp-2">Try asking: &quot;{s.prompt}&quot;</p>
                         </div>
                     </button>
                 ))}

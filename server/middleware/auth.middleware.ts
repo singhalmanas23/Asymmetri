@@ -11,10 +11,6 @@ export interface AuthenticatedRequest extends NextRequest {
   };
 }
 
-/**
- * Middleware to authenticate API requests
- * Ensures user is logged in and attaches user info to request
- */
 export async function authenticateRequest(): Promise<
   { user: AuthenticatedRequest["user"] } | { error: NextResponse }
 > {
@@ -61,8 +57,6 @@ export function withAuth<T>(
     if ("error" in auth) {
       return auth.error;
     }
-
-    // Attach user to request
     const authenticatedRequest = request as AuthenticatedRequest;
     authenticatedRequest.user = auth.user;
 
