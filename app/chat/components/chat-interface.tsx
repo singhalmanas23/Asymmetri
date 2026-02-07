@@ -152,15 +152,27 @@ function EmptyState({ setInput }: { setInput: (v: string) => void }) {
                 <h2 className="text-2xl font-bold">How can I help you?</h2>
                 <p className="text-muted-foreground">I'm integrated with real-time tools. Ask me about current events or financial data.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-lg">
-                {suggestions.map((s) => (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl px-4">
+                {suggestions.map((s, i) => (
                     <button
                         key={s.label}
                         onClick={() => setInput(s.prompt)}
-                        className="flex flex-col items-center gap-3 p-4 rounded-xl bg-card border border-white/5 hover:border-primary/30 hover:bg-white/5 transition-all cursor-pointer group"
+                        className={cn(
+                            "flex flex-col items-start gap-3 p-5 rounded-2xl bg-card/40 border border-white/5",
+                            "hover:border-primary/40 hover:bg-primary/5 hover:translate-y-[-4px] transition-all duration-300",
+                            "cursor-pointer group text-left backdrop-blur-md relative overflow-hidden shadow-lg",
+                            "animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+                        )}
+                        style={{ animationDelay: `${i * 100}ms` }}
                     >
-                        <div className="p-2 rounded-full bg-background group-hover:scale-110 transition-transform">{s.icon}</div>
-                        <span className="text-sm font-medium">{s.label}</span>
+                        <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-150 transition-transform duration-500 pointer-events-none">
+                            {s.icon}
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-background/80 shadow-sm ring-1 ring-white/5 group-hover:ring-primary/20 transition-all">{s.icon}</div>
+                        <div>
+                            <span className="text-sm font-semibold block mb-1 group-hover:text-primary transition-colors">{s.label}</span>
+                            <p className="text-[11px] text-muted-foreground line-clamp-2">Try asking: "{s.prompt}"</p>
+                        </div>
                     </button>
                 ))}
             </div>
