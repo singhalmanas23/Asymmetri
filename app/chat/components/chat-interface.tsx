@@ -32,7 +32,31 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
         body: { chatId: id },
         onError: (err: any) => {
             console.error("Chat error:", err);
-            toast.error(err.message || "Failed to send message");
+            let message = "Failed to send message";
+
+            // Handle both JSON error responses and raw text/status codes
+            if (err.message) {
+                try {
+                    // Our API returns JSON for 429 errors
+                    const parsed = JSON.parse(err.message);
+                    if (parsed.error) message = parsed.error;
+                } catch (e) {
+                    // Fallback for non-JSON or other error formats
+                    if (err.message.includes("429") ||
+                        err.message.includes("quota") ||
+                        err.message.toLowerCase().includes("limit") ||
+                        err.message.includes("RESOURCE_EXHAUSTED")) {
+                        message = "Gemini API rate limit reached. Please wait a moment before retrying.";
+                    } else {
+                        message = err.message;
+                    }
+                }
+            }
+
+            toast.error(message, {
+                description: "This usually happens on free tier accounts after multiple rapid requests.",
+                duration: 5000,
+            });
         }
     } as any);
 
@@ -61,7 +85,7 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
                                 )}
 
                                 <div className={cn("flex flex-col gap-2 max-w-[80%]", m.role === "user" ? "items-end" : "items-start")}>
-                                    {m.content && (
+                                    {(m.content || m.parts?.some((p: any) => p.type === 'text')) && (
                                         <div
                                             className={cn(
                                                 "rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
@@ -71,25 +95,44 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
                                             )}
                                         >
                                             {m.content}
+                                            {m.parts?.map((part: any, i: number) =>
+                                                part.type === 'text' ? <span key={i}>{part.text}</span> : null
+                                            )}
                                         </div>
                                     )}
 
-                                    {/* Tool Invocations (if any are present in the message object, Vercel AI SDK adds them) */}
-                                    {m.toolInvocations?.map((toolInvocation: any) => {
+                                    {/* Tool Invocations from parts (new SDK) */}
+                                    {m.parts?.map((part: any, i: number) => {
+                                        if (part.type !== 'tool-invocation') return null;
+                                        const { toolInvocation } = part;
                                         const toolCallId = toolInvocation.toolCallId;
                                         const toolName = toolInvocation.toolName;
-                                        // const toolArgs = toolInvocation.args; // if needed
 
                                         if ('result' in toolInvocation) {
-                                            // Tool has finished
+                                            return <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
+                                        } else {
                                             return (
-                                                <ToolResult key={toolCallId} toolName={toolName} result={toolInvocation.result} />
+                                                <div key={toolCallId || i} className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg animate-pulse">
+                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                    Using {toolName}...
+                                                </div>
+                                            )
+                                        }
+                                    })}
+
+                                    {/* Legacy Tool Invocations (backward compatibility) */}
+                                    {m.toolInvocations?.map((toolInvocation: any, i: number) => {
+                                        const toolCallId = toolInvocation.toolCallId;
+                                        const toolName = toolInvocation.toolName;
+
+                                        if ('result' in toolInvocation) {
+                                            return (
+                                                <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
                                             )
                                         } else {
-                                            // Tool is loading
                                             return (
-                                                <div key={toolCallId} className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg animate-pulse">
-                                                    <Loader2 className="w-3 h-3 animate-spin flow-root" />
+                                                <div key={toolCallId || i} className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg animate-pulse">
+                                                    <Loader2 className="w-3 h-3 animate-spin" />
                                                     Using {toolName}...
                                                 </div>
                                             )
