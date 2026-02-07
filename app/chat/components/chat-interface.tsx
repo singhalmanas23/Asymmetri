@@ -15,6 +15,7 @@ import { ChatInput } from "@/common/components/sidebar/components/chat-input";
 import { useEffect, useRef } from "react";
 import { cn } from "@/common/lib/utils";
 import { deleteChatSession } from "@/lib/actions";
+import { toast } from "sonner";
 
 interface ChatInterfaceProps {
     id?: string;
@@ -24,12 +25,18 @@ interface ChatInterfaceProps {
 export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const { messages, input, setInput, handleInputChange, handleSubmit, isLoading } = useChat({
+    const { messages, status, error, sendMessage } = useChat({
         api: "/api/chat",
         id,
         initialMessages: initialMessages as any,
         body: { chatId: id },
-    } as any) as any;
+        onError: (err: any) => {
+            console.error("Chat error:", err);
+            toast.error(err.message || "Failed to send message");
+        }
+    } as any);
+
+    const isLoading = status === 'submitted' || status === 'streaming';
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -41,7 +48,7 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
         <div className="flex flex-col h-full max-w-4xl mx-auto w-full p-4 relative z-10">
             <ScrollArea className="flex-1 pr-4">
                 {messages.length === 0 ? (
-                    <EmptyState setInput={setInput as any} />
+                    <EmptyState onSend={(val) => sendMessage({ text: val })} />
                 ) : (
                     <div className="space-y-6 pb-4">
                         {messages.map((m: any) => (
@@ -117,9 +124,7 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
             <div className="mt-4 pt-4 border-t border-white/5">
                 <ChatInput
                     onSend={(val) => {
-                        setInput(val);
-                        // Trigger submit after state change
-                        setTimeout(() => handleSubmit(), 0);
+                        sendMessage({ text: val });
                     }}
                     isStreaming={isLoading}
                     disabled={isLoading}
@@ -130,7 +135,7 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
     );
 }
 
-function EmptyState({ setInput }: { setInput: (v: string) => void }) {
+function EmptyState({ onSend }: { onSend: (v: string) => void }) {
     const suggestions = [
         { label: "Weather in Tokyo", icon: <CloudSun className="w-4 h-4 text-orange-400" />, prompt: "What is the weather in Tokyo?" },
         { label: "Apple Stock Price", icon: <DollarSign className="w-4 h-4 text-green-400" />, prompt: "Get the stock price for AAPL" },
@@ -150,7 +155,7 @@ function EmptyState({ setInput }: { setInput: (v: string) => void }) {
                 {suggestions.map((s, i) => (
                     <button
                         key={s.label}
-                        onClick={() => setInput(s.prompt)}
+                        onClick={() => onSend(s.prompt)}
                         className={cn(
                             "flex flex-col items-start gap-3 p-5 rounded-2xl bg-card/40 border border-white/5",
                             "hover:border-primary/40 hover:bg-primary/5 hover:translate-y-[-4px] transition-all duration-300",
