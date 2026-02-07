@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages } from "ai";
+import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import { getServerSession } from "next-auth";
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
       system: SYSTEM_PROMPT,
       messages: coreMessages,
       tools,
+      stopWhen: stepCountIs(5),
       onFinish: async ({ text, toolCalls, toolResults }) => {
         try {
           // Save the full interaction to the database
@@ -84,7 +85,8 @@ export async function POST(req: Request) {
       }
     });
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("Chat API error details:", JSON.stringify(error, null, 2));
+    console.error("Chat API error message:", (error as any).message);
 
     // Check for quota/rate limit errors
     const errorMessage = (error as Error).message || "";

@@ -80,6 +80,30 @@ export class ChatService {
   }
 
   /**
+   * Create a new chat session
+   * @param userId - The ID of the user
+   * @param title - The title of the session
+   * @param description - The description of the session
+   * @returns The created session
+   */
+  async createSession(
+    userId: string,
+    title: string,
+    description: string
+  ): Promise<ChatSessionType> {
+    const [created] = await db
+      .insert(ChatSession)
+      .values({
+        userId,
+        title,
+        description,
+      })
+      .returning();
+
+    return created;
+  }
+
+  /**
    * Get user's chat sessions with pagination
    * @param userId - The ID of the user to get sessions for
    * @param limit - Maximum number of sessions to return (default: 20)
