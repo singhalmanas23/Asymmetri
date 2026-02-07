@@ -111,12 +111,24 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
 
                                     {/* Tool Invocations from parts (new SDK) */}
                                     {m.parts?.map((part: any, i: number) => {
-                                        if (part.type !== 'tool-invocation') return null;
-                                        const { toolInvocation } = part;
+                                        const isToolCall = part.type === 'tool-invocation' ||
+                                            part.type === 'dynamic-tool' ||
+                                            part.type.startsWith('tool-');
+
+                                        if (!isToolCall) return null;
+
+                                        // Normalize the tool invocation structure
+                                        const toolInvocation = part.toolInvocation || {
+                                            ...part,
+                                            // Handle potential 'input' instead of 'args' if version differs
+                                            args: part.args || part.input,
+                                            result: part.result || part.output,
+                                        };
+
                                         const toolCallId = toolInvocation.toolCallId;
                                         const toolName = toolInvocation.toolName;
 
-                                        if ('result' in toolInvocation) {
+                                        if ('result' in toolInvocation || toolInvocation.result) {
                                             return <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
                                         } else {
                                             return (
@@ -128,15 +140,13 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
                                         }
                                     })}
 
-                                    {/* Legacy Tool Invocations (backward compatibility) */}
-                                    {m.toolInvocations?.map((toolInvocation: any, i: number) => {
+                                    {/* backward compatibility for m.toolInvocations */}
+                                    {!m.parts && m.toolInvocations?.map((toolInvocation: any, i: number) => {
                                         const toolCallId = toolInvocation.toolCallId;
                                         const toolName = toolInvocation.toolName;
 
                                         if ('result' in toolInvocation) {
-                                            return (
-                                                <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
-                                            )
+                                            return <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
                                         } else {
                                             return (
                                                 <div key={toolCallId || i} className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-3 py-2 rounded-lg animate-pulse">
