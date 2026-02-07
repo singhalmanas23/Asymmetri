@@ -11,6 +11,7 @@ import { Send, Bot, User as UserIcon, Loader2, CloudSun, DollarSign, Trophy } fr
 import { WeatherCard } from "./tools/weather-card";
 import { StockCard } from "./tools/stock-card";
 import { RaceCard } from "./tools/race-card";
+import { ChatInput } from "@/common/components/sidebar/components/chat-input";
 import { useEffect, useRef } from "react";
 import { cn } from "@/common/lib/utils";
 import { deleteChatSession } from "@/lib/actions";
@@ -114,23 +115,16 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
             </ScrollArea>
 
             <div className="mt-4 pt-4 border-t border-white/5">
-                <form onSubmit={handleSubmit} className="flex items-center gap-2 relative">
-                    <Input
-                        value={input}
-                        onChange={handleInputChange}
-                        placeholder="Ask about weather, stocks, or F1..."
-                        className="flex-1 bg-background/50 border-white/10 focus:border-primary/50 h-12 pl-4 pr-12 rounded-xl backdrop-blur-sm shadow-inner"
-                        disabled={isLoading}
-                    />
-                    <Button
-                        type="submit"
-                        size="icon"
-                        className="absolute right-1 top-1 h-10 w-10 rounded-lg bg-primary hover:bg-primary/90 transition-all shadow-md"
-                        disabled={isLoading || !input.trim()}
-                    >
-                        <Send className="w-4 h-4" />
-                    </Button>
-                </form>
+                <ChatInput
+                    onSend={(val) => {
+                        setInput(val);
+                        // Trigger submit after state change
+                        setTimeout(() => handleSubmit(), 0);
+                    }}
+                    isStreaming={isLoading}
+                    disabled={isLoading}
+                    placeholder="Ask about weather, stocks, or F1..."
+                />
             </div>
         </div>
     );

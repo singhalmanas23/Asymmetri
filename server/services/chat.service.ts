@@ -265,6 +265,19 @@ export class ChatService {
   }
 
   /**
+   * Delete all sessions for a user
+   * @param userId - The ID of the user
+   * @returns True if any sessions were deleted
+   */
+  async deleteAllUserSessions(userId: string): Promise<boolean> {
+    const rows = await db
+      .delete(ChatSession)
+      .where(eq(ChatSession.userId, userId))
+      .returning();
+    return rows.length > 0;
+  }
+
+  /**
    * Clean up orphaned session by ID (session with no messages)
    * Called immediately when streaming fails after session creation
    * @param sessionId - The ID of the session to clean up

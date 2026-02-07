@@ -8,7 +8,7 @@ import Link from "next/link";
 import { UserProfile } from "./user-profile";
 import NextImage from "next/image";
 import { IMAGES } from "@/common/constant/images";
-import { deleteChatSession } from "@/lib/actions";
+import { deleteChatSession, clearAllChatSessions } from "@/lib/actions";
 import { toast } from "sonner";
 import { refreshSidebar } from "./chat-sidebar";
 
@@ -135,6 +135,24 @@ export function ChatSidebarDesktop({
           <h2 className="text-xs font-semibold text-muted-foreground px-2 uppercase tracking-wide">
             Your chats
           </h2>
+          <button
+            onClick={async () => {
+              if (confirm("Delete all chat history? This cannot be undone.")) {
+                try {
+                  const res = await clearAllChatSessions();
+                  if (res.success) {
+                    toast.success("History cleared");
+                    refreshSidebar();
+                  }
+                } catch (e) {
+                  toast.error("Failed to clear history");
+                }
+              }
+            }}
+            className="text-[10px] text-muted-foreground/50 hover:text-destructive px-2 uppercase tracking-tight transition-colors"
+          >
+            Clear All
+          </button>
         </div>
         <ScrollArea className="flex-1 px-2 pb-4 h-full">
           <div className="space-y-0.5 px-1 min-h-0 mb-8 cursor-pointer">

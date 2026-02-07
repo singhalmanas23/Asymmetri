@@ -30,10 +30,7 @@ export async function clearAllChatSessions() {
         throw new Error("Unauthorized");
     }
 
-    // Implementation in service might be needed, but for now we can loop or add service method
-    // For demonstration, let's assume we implement a bulk delete
-    // await chatService.deleteAllUserSessions(session.user.id);
-
+    const result = await chatService.deleteAllUserSessions(session.user.id);
     revalidatePath("/chat");
-    return { success: true };
+    return { success: result };
 }
