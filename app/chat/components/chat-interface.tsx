@@ -15,6 +15,7 @@ import { ChatInput } from "@/common/components/sidebar/components/chat-input";
 import { useEffect, useRef } from "react";
 import { cn } from "@/common/lib/utils";
 import { deleteChatSession } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface ChatInterfaceProps {
@@ -24,12 +25,19 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
 
     const { messages, status, error, sendMessage } = useChat({
         api: "/api/chat",
         id,
         initialMessages: initialMessages as any,
         body: { chatId: id },
+        onResponse: (response: Response) => {
+            const sessionId = response.headers.get("x-session-id");
+            if (sessionId && !id) {
+                router.push(`/chat/${sessionId}`);
+            }
+        },
         onError: (err: any) => {
             console.error("Chat error:", err);
             let message = "Failed to send message";
