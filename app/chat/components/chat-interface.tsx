@@ -54,7 +54,7 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
                         err.message.includes("quota") ||
                         err.message.toLowerCase().includes("limit") ||
                         err.message.includes("RESOURCE_EXHAUSTED")) {
-                        message = "Gemini API rate limit reached. Please wait a moment before retrying.";
+                        message = "AI Provider rate limit reached. Please wait a moment before retrying.";
                     } else {
                         message = err.message;
                     }
@@ -62,7 +62,7 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
             }
 
             toast.error(message, {
-                description: "This usually happens on free tier accounts after multiple rapid requests.",
+                description: err.message || "This usually happens on free tier accounts after multiple rapid requests.",
                 duration: 5000,
             });
         }

@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages, stepCountIs } from "ai";
+import { streamText, convertToModelMessages, stepCountIs, pruneMessages } from "ai";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import { getServerSession } from "next-auth";
@@ -52,10 +52,18 @@ export async function POST(req: Request) {
 
     const coreMessages = await convertToModelMessages(messages);
 
+    // Prune messages to fit within token limits (helps with Groq/Gemini free tiers)
+    // We keep reasoning and tool results only for the current turn to save tokens
+    const prunedMessages = pruneMessages({
+      messages: coreMessages,
+      reasoning: 'before-last-message',
+      toolCalls: 'before-last-message',
+    });
+
     const result = await streamText({
       model: LLM_CONFIG.model as any,
       system: SYSTEM_PROMPT,
-      messages: coreMessages,
+      messages: prunedMessages,
       tools,
       stopWhen: stepCountIs(5),
       onFinish: async ({ text, toolCalls, toolResults }) => {
