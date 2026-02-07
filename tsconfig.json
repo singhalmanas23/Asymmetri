@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,11 +24,24 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["app/*"],
-      "@/db/*": ["server/db/*"],
-      "@/services/*": ["server/services/*"],
-      "@/schema/*": ["server/db/schema/*"],
-      "@/common/*": ["common/*"]
+      "@/*": [
+        "app/*"
+      ],
+      "@/db/*": [
+        "server/db/*"
+      ],
+      "@/services/*": [
+        "server/services/*"
+      ],
+      "@/schema/*": [
+        "server/db/schema/*"
+      ],
+      "@/server/*": [
+        "server/*"
+      ],
+      "@/common/*": [
+        "common/*"
+      ]
     }
   },
   "include": [
@@ -35,5 +52,7 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
