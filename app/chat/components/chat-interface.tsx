@@ -126,7 +126,9 @@ export function ChatInterface({ id, initialMessages = [] }: ChatInterfaceProps) 
                                         };
 
                                         const toolCallId = toolInvocation.toolCallId;
-                                        const toolName = toolInvocation.toolName;
+                                        // V6 uses tool-NAME as the type, and sometimes omits toolName in the part itself
+                                        const toolName = toolInvocation.toolName ||
+                                            (part.type?.startsWith('tool-') ? part.type.replace('tool-', '') : 'unknown');
 
                                         if ('result' in toolInvocation || toolInvocation.result) {
                                             return <ToolResult key={toolCallId || i} toolName={toolName} result={toolInvocation.result} />
@@ -241,19 +243,27 @@ function EmptyState({ onSend }: { onSend: (v: string) => void }) {
 }
 
 function ToolResult({ toolName, result }: { toolName: string, result: any }) {
-    if (toolName === 'getWeather') {
+    const name = toolName.toLowerCase();
+
+    if (name === 'getweather' || name === 'weather') {
         const { location, temperature, condition, humidity, windSpeed, error } = result;
         if (error) return <ErrorCard error={error} />;
-        return <WeatherCard location={location} temperature={temperature} condition={condition} humidity={humidity} windSpeed={windSpeed} />;
+        return <WeatherCard
+            location={location}
+            temperature={temperature}
+            condition={condition}
+            humidity={humidity}
+            windSpeed={windSpeed || 0}
+        />;
     }
 
-    if (toolName === 'getStockPrice') {
+    if (name === 'getstockprice' || name === 'stock') {
         const { symbol, price, change, error } = result;
         if (error) return <ErrorCard error={error} />;
         return <StockCard symbol={symbol} price={price} change={change} />;
     }
 
-    if (toolName === 'getF1Matches') {
+    if (name === 'getf1matches' || name === 'f1') {
         const { raceName, circuit, location, date, time, error } = result;
         if (error) return <ErrorCard error={error} />;
         return <RaceCard raceName={raceName} circuit={circuit} location={location} date={date} time={time} />;

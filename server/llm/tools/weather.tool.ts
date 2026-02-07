@@ -33,6 +33,7 @@ export const getWeather = tool({
       temperature: data.main.temp,
       condition: data.weather[0].description,
       humidity: data.main.humidity,
+      windSpeed: data.wind.speed,
     };
   },
 });
